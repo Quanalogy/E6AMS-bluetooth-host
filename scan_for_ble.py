@@ -1,4 +1,4 @@
-
+# Following code taken from: https://github.com/karulis/pybluez
 
 # bluetooth low energy scan
 from bluetooth.ble import DiscoveryService
