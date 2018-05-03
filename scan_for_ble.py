@@ -1,15 +1,18 @@
 # Following code taken from: https://github.com/karulis/pybluez
 
 import time
+import os
 # bluetooth low energy scan
 from bluetooth.ble import DiscoveryService
-from xdo import Xdo
+#from xdo import Xdo
 
-xdo_obj = Xdo()
+#xdo_obj = Xdo()
 
-win_id = xdo_obj.select_window_with_click()
+#win_id = xdo_obj.select_window_with_click()
 
-pointer_name = "kim_larsen"
+#print(win_id)
+
+pointer_name = "bill_gates"
 spacer = "======================================"
 half_spacer = "--------------------------------------"
 
@@ -52,20 +55,27 @@ for address, name in pointer_devices:
     print("name: {}, address: {}".format(name, address))
     print(half_spacer)
 
+#impress_str = b'impress'
+
+#$ xdotool search impress click 4
+#Defaulting to search window name, class, and classname
+
+#impress_wins = xdo_obj.search_windows(winname=impress_str, winclass=impress_str, winclassname=impress_str)
+
+#win_id = impress_wins[0]
 
 reverse = False
+
+xdo_cmd = "xdotool search impress click {}"
 for i in range(10):
 
     if i % 3 == 0:
         reverse = not reverse
 
-    # xdo_obj.click_window(win_id, 5)
     time.sleep(1)
     if not reverse:
-        xdo_obj.click_window(win_id, 4)
-        # xdo_obj.send_keysequence_window(win_id, "Down", 0.0)
+        os.system(xdo_cmd.format(4))
     else:
-        xdo_obj.click_window(win_id, 5)
-        # xdo_obj.send_keysequence_window(win_id, "Up")
+        os.system(xdo_cmd.format(5))
 
 print()
