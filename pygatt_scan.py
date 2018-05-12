@@ -15,7 +15,7 @@ def handle_data(handle, value):
     print("Received data: %s" % hexlify(value))
 
 
-hm10_uuid = "FFE0"
+hm10_uuid = ""
 hm10_address = "D4:36:39:BB:E8:D6"
 # The BGAPI backend will attemt to auto-discover the serial device name of the
 # attached BGAPI-compatible USB adapter.
@@ -24,7 +24,9 @@ adapter = pygatt.GATTToolBackend()
 try:
     adapter.start()
     device = adapter.connect(address=hm10_address)
+    val = device.discover_characteristics()
+    print("discover_characteristics", val)
     # value = device.char_read(hm10_uuid)
-    device.subscribe(hm10_uuid, callback=handle_data)
+    # device.subscribe(hm10_uuid, callback=handle_data)
 finally:
     adapter.stop()
