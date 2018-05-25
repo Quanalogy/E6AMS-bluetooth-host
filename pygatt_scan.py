@@ -4,7 +4,7 @@ import pygatt
 import logging
 import time
 
-from binascii import hexlify
+from Layers.DllLayer import DllLayer
 
 logging.basicConfig()
 logging.getLogger('pygatt').setLevel(logging.DEBUG)
@@ -14,7 +14,9 @@ def handle_data(handle: int, value: bytearray):
         handle -- integer, characteristic read handle the data was received on
         value -- bytearray, the data returned in the notification
     """
-    print("Received data: %s" % hexlify(value))
+    print("Received data: {}".format(value.hex()))
+
+
 
 
 hm10_uuid = "0000FFE1-0000-1000-8000-00805F9B34FB"
@@ -30,7 +32,7 @@ try:
     print("discover_characteristics", val)
     device.subscribe(hm10_uuid, callback=handle_data)
     while True:
-        time.sleep(1)
+        time.sleep(0.1)
 
 finally:
     adapter.stop()
