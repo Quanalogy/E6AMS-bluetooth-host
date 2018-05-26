@@ -40,7 +40,7 @@ class DllFrame(FrameTemplate):
         version = frame[3]
         payload = frame[4:-16]
         hash = frame[-16:]
-        real_length = len(frame[1:])
+        real_length = len(frame[3:])
 
         if packetValid(preamble, expected_length, version, payload, hash, real_length):
             return cls(preamble, expected_length, version, payload, hash, real_length)

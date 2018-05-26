@@ -29,4 +29,4 @@ class AppFrame(FrameTemplate):
             return None
 
         payload = frame[3:]
-        return cls.__init__(command, expected_length, payload)
+        return cls(command, expected_length, payload)

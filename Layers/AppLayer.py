@@ -2,7 +2,7 @@ import os
 
 from Layers.LayerTemplate import LayerTemplate
 from Misc.Commands import Commands
-from Misc.Buttons import buttons_mapping
+from Misc.Buttons import profile_mapping
 
 class AppLayer(LayerTemplate):
 
@@ -20,8 +20,11 @@ class AppLayer(LayerTemplate):
             pass
         elif command == Commands.control:
             xdo_cmd = "xdotool search impress click {}"
-            os.system(xdo_cmd.format(buttons_mapping[command.payload]))
-            print("pressed", buttons_mapping[command.payload])
+            payload = app_frame.getPayload()
+            profile = payload[0]
+            button = payload[1]
+            os.system(xdo_cmd.format(profile_mapping[profile][button]))
+            print("pressed", profile_mapping[profile][button])
         elif command == Commands.firmware_ready_to_accept:
             pass
         elif command == Commands.firmware_reset:
