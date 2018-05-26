@@ -1,4 +1,5 @@
 from Layers.LayerTemplate import LayerTemplate
+from Frames.DllFrame import DllFrame
 
 class DllLayer(LayerTemplate):
 

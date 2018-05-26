@@ -17,6 +17,7 @@ class AppFrame(FrameTemplate):
     def getPayload(self):
         return self.payload
 
+    @classmethod
     def from_bytes(cls, frame):
         command = frame[0]
         expected_length = struct.unpack(">H", frame[1:3])[0]

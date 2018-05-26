@@ -1,4 +1,4 @@
-class FrameTemplate:
+class FrameTemplate(object):
 
     def getPayload(self):
         """ Method for handle receive of new packet.
@@ -15,5 +15,6 @@ class FrameTemplate:
         print(self)
         return None
 
+    @classmethod
     def from_bytes(self, frame):
         raise NotImplementedError

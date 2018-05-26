@@ -33,16 +33,17 @@ class DllFrame(FrameTemplate):
         else:
             return None
 
+    @classmethod
     def from_bytes(cls, frame):
         preamble = frame[0]
-        expected_length = frame[1:3]
+        expected_length = struct.unpack(">H", frame[1:3])[0]
         version = frame[3]
         payload = frame[4:-16]
         hash = frame[-16:]
         real_length = len(frame[1:])
 
         if packetValid(preamble, expected_length, version, payload, hash, real_length):
-            return cls.__init__(preamble, expected_length, version, payload, hash, real_length)
+            return cls(preamble, expected_length, version, payload, hash, real_length)
         else:
             return None
 
