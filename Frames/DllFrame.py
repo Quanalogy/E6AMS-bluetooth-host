@@ -6,8 +6,6 @@ from Frames.FrameTemplate import FrameTemplate
 class DllFrame(FrameTemplate):
 
     def __init__(self, preamble, length, version, payload, hash, real_packet_length):
-        self.supported_version = 1
-        self.supported_preamble = 0xAA
         self.preamble = preamble
         self.version = version
         self.payload = payload
@@ -28,32 +26,45 @@ class DllFrame(FrameTemplate):
     def getPayload(self):
         """ Method for handle receive of new packet.
         :param packet:  The packet received in form of: |Preamble|Length
-        :return:        Response of the packet, None if no response is required.
+        :return:        Response of the packet, None if no response is required or if packet is not valid
         """
-        if self.preamble != self.supported_preamble:
-            return self.printAndReturnNone("The preamble is wrong!")
-        elif self.expected_packet_length > self.real_packet_length:
-            return self.printAndReturnNone("Packet length short I can't understand.")
-        elif self.expected_packet_length < self.real_packet_length:
-            print("Packet length too long, trying to read is hash is OK.")
-        elif self.version != self.supported_version:
-            return self.printAndReturnNone("Version is not equal to the supported version!")
-
-        if packetValid(self.preamble, self.expected_packet_length, self.version, self.payload, self.hash):
+        if packetValid(self.preamble, self.expected_packet_length, self.version, self.payload, self.hash, self.real_packet_length):
             return self.payload
         else:
             return None
 
     def from_bytes(cls, frame):
-        return cls.__init__(frame[0], frame[1:3], frame[3], frame[4:-16], frame[-16:], len(frame[1:]))
+        preamble = frame[0]
+        expected_length = frame[1:3]
+        version = frame[3]
+        payload = frame[4:-16]
+        hash = frame[-16:]
+        real_length = len(frame[1:])
 
-def packetValid(preamble, length, version, payload, hash) -> bool:
+        if packetValid(preamble, expected_length, version, payload, hash, real_length):
+            return cls.__init__(preamble, expected_length, version, payload, hash, real_length)
+        else:
+            return None
+
+def packetValid(preamble, expected_length, version, payload, hash, real_length) -> bool:
+    supported_version = 1
+    supported_preamble = 0xAA
     md5 = hashlib.md5()
-    md5.update(struct.pack(">BHB", preamble, length, version) + payload)
+    md5.update(struct.pack(">BHB", preamble, expected_length, version) + payload)
 
-    if md5.digest() == hash:
+    if preamble != supported_preamble:
+        print("The preamble is wrong!")
+        return False
+    elif expected_length > real_length:
+        print("Packet length short I can't understand.")
+        return False
+    elif expected_length < real_length:
+        print("Packet length too long, trying to read is hash is OK.")
+    elif version != supported_version:
+        print("Version is not equal to the supported version!")
+        return False
+    elif md5.digest() == hash:
         return True
     else:
         print("Hash not right!")
-
-    return False
+        return False
