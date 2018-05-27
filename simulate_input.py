@@ -26,4 +26,15 @@ packet = packet_no_md5 + md5.digest()
 dll_layer = DllLayer(DllFrame)
 app_layer = AppLayer(AppFrame)
 dll_layer.bind(app_layer)
-dll_layer.receive(packet)
+
+step = int(len(packet) / 3)
+
+for i in range(3):
+    first_index = step*i
+    if i == 2:
+        to_send = packet[first_index:]
+
+    else:
+        to_send = packet[first_index:step*(i+1)]
+
+    dll_layer.receive(to_send)
