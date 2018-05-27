@@ -57,7 +57,7 @@ def packetValid(preamble, expected_length, version, payload, hash, real_length) 
         print("The preamble is wrong!")
         return False
     elif expected_length > real_length:
-        print("Packet length short I can't understand.")
+        print("Packet length short I can't understand.\nExpected: {} != {} real".format(expected_length, real_length))
         return False
     elif expected_length < real_length:
         print("Packet length too long, trying to read is hash is OK.")
