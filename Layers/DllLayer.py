@@ -12,35 +12,23 @@ class DllLayer(LayerTemplate):
 
     def __init__(self, frame_parser: FrameTemplate):
         super().__init__(frame_parser)
-        self.hm10_uuid = "0000FFE1-0000-1000-8000-00805F9B34FB"
-        self.hm10_address = "D4:36:39:BB:E8:D6"
         # The BGAPI backend will attemt to auto-discover the serial device name of the
         # attached BGAPI-compatible USB adapter.
-        self.adapter = pygatt.GATTToolBackend()
         self.SOF = 0xAA
-        self.started = False
-        self.remaining = 0
-        self.totalPacket = bytearray()
+        self.reset_packet_values()
+
+        self.hm10_uuid = "0000FFE1-0000-1000-8000-00805F9B34FB"
+        self.hm10_address = "D4:36:39:BB:E8:D6"
+        self.adapter = pygatt.GATTToolBackend()
         self.adapter.start()
         self.device = self.adapter.connect(address=self.hm10_address)
-        self.device.subscribe(self.hm10_uuid, callback=self.handle_data)
+        self.device.subscribe(self.hm10_uuid, callback=self.receive)
 
-    def handle_data(self, handle: int, value: bytearray):
-        """
-            handle -- integer, characteristic read handle the data was received on
-            value -- bytearray, the data returned in the notification
-        """
-        response = self.receive(value)
-
-        if response is not None:
-            print("This is the response: {}".format(response.hex()))
-            # device.w
-
-    def receive(self, packet):
+    def receive(self, handle: int, packet: bytearray):
         """ Method for handle receive of new packet.
 
         :param packet:  The packet received in form of: |Preamble|Length
-        :return:        Response of the packet, None if no response is required.
+        :return:        Nothing
         """
 
         packet_len = len(packet)
@@ -61,9 +49,9 @@ class DllLayer(LayerTemplate):
 
             if response != None:
                 print("You need to implement response mate")
-                return response
+                return
 
-            self.resetPacketValues()
+            self.reset_packet_values()
 
         else:
             if packet[0] == self.SOF:
@@ -76,12 +64,10 @@ class DllLayer(LayerTemplate):
 
             return None
 
-
-    def resetPacketValues(self):
+    def reset_packet_values(self):
         self.started = False
         self.remaining = 0
         self.totalPacket = bytearray()
-
 
     def handle_packet(self):
         dll_frame = self.frame_parser.from_bytes(self.totalPacket)

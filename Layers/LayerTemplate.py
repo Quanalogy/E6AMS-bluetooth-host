@@ -1,5 +1,3 @@
-import pygatt
-
 from Frames import FrameTemplate
 
 class BaseLayerTemplate:
@@ -7,9 +5,6 @@ class BaseLayerTemplate:
     def __init__(self, frame_parser: FrameTemplate):
         self.frame_parser = frame_parser
         self.payload = None
-
-    def receive(self, packet):
-        raise NotImplementedError
 
     def send(self, packet):
         raise NotImplementedError
