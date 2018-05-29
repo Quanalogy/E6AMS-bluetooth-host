@@ -19,7 +19,7 @@ class AppLayer(LayerTemplate):
         if command == Commands.ack_nack:
             pass
         elif command == Commands.control:
-            xdo_cmd = "xdotool search impress click {}"
+            xdo_cmd = "DISPLAY=:0 xdotool search impress click {}"
             payload = app_frame.getPayload()
             profile = payload[0]
             button = payload[1]
