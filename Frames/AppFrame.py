@@ -4,18 +4,26 @@ from Frames.FrameTemplate import FrameTemplate
 
 class AppFrame(FrameTemplate):
 
-    def __init__(self, command, expected_length, payload):
+    def __init__(self, command, length, payload):
         self.command = command
-        self.expected_length = expected_length
+        self.length = length
         self.payload = payload
 
     def __repr__(self):
         return "\n".join(["Command: {}".format(self.command),
-                          "Length: {}".format(self.expected_length),
+                          "Length: {}".format(self.length),
                           "Payload: {}".format(self.payload)])
 
     def getPayload(self):
         return self.payload
+
+    def frame(self):
+        header = struct.pack(">BH", self.command, self.length)
+
+        if self.payload is None:
+            return header
+
+        return header + self.payload
 
     @classmethod
     def from_bytes(cls, frame):

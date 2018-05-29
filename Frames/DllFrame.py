@@ -3,6 +3,14 @@ import struct
 
 from Frames.FrameTemplate import FrameTemplate
 
+supported_version = 1
+supported_preamble = 0xAA
+
+preamble_len = 1
+len_len = 2
+version_len = 1
+hash_len = 16
+
 class DllFrame(FrameTemplate):
 
     def __init__(self, preamble, length, version, payload, hash, real_packet_length):
@@ -10,7 +18,7 @@ class DllFrame(FrameTemplate):
         self.version = version
         self.payload = payload
         self.hash = hash
-        self.expected_packet_length = length
+        self.length = length
         self.real_packet_length = real_packet_length
 
     def __repr__(self):
@@ -19,7 +27,7 @@ class DllFrame(FrameTemplate):
                           "Version:\t {}".format(self.version),
                           "Payload:\t {}".format(self.payload),
                           "Hash:\t {}".format(self.hash),
-                          "Expected length: {}".format(self.expected_packet_length),
+                          "Expected length: {}".format(self.length),
                           "Real packet length {}".format(self.real_packet_length)
                           ])
 
@@ -28,10 +36,22 @@ class DllFrame(FrameTemplate):
         :param packet:  The packet received in form of: |Preamble|Length
         :return:        Response of the packet, None if no response is required or if packet is not valid
         """
-        if packetValid(self.preamble, self.expected_packet_length, self.version, self.payload, self.hash, self.real_packet_length):
+        if packetValid(self.preamble, self.length, self.version, self.payload, self.hash, self.real_packet_length):
             return self.payload
         else:
             return None
+
+    def frame(self):
+        header = struct.pack(">BHB", self.preamble, self.length, self.version)
+        return header + self.payload + self.hash
+
+    @classmethod
+    def from_appframe(cls, frame):
+        dll_len = version_len + len(frame) + 16
+        md5 = hashlib.md5()
+        md5.update(struct.pack(">BHB", supported_preamble, dll_len, supported_version) + frame)
+
+        return cls(supported_preamble, dll_len, supported_version, frame, md5.digest(), dll_len)
 
     @classmethod
     def from_bytes(cls, frame):
@@ -48,8 +68,6 @@ class DllFrame(FrameTemplate):
             return None
 
 def packetValid(preamble, expected_length, version, payload, hash, real_length) -> bool:
-    supported_version = 1
-    supported_preamble = 0xAA
     md5 = hashlib.md5()
     md5.update(struct.pack(">BHB", preamble, expected_length, version) + payload)
 

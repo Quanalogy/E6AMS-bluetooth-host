@@ -33,20 +33,8 @@ class AppLayer(LayerTemplate):
             pass
         elif command == Commands.firmware_segment_count:
             pass
-        #
-        #
-        # reverse = False
-        #
-        # xdo_cmd = "xdotool search impress click {}"
-        # for i in range(10):
-        #
-        #     if i % 3 == 0:
-        #         reverse = not reverse
-        #
-        #     time.sleep(1)
-        #     if not reverse:
-        #         os.system(xdo_cmd.format(4))
-        #     else:
-        #         os.system(xdo_cmd.format(5))
-        #
-        # print()
+
+    def sendFWReset(self, path_to_firmware):
+        self.path_to_firmware = path_to_firmware
+        app_frame_obj = self.frame_parser(Commands.firmware_reset.value, 0, 0)
+        self.upper_layer.send(app_frame_obj.frame)

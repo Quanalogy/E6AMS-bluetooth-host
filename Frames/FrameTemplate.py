@@ -9,6 +9,8 @@ class FrameTemplate(object):
     def __repr__(self):
         raise NotImplementedError
 
+    def frame(self):
+        raise NotImplementedError
 
     def printAndReturnNone(self, to_user):
         print(to_user)

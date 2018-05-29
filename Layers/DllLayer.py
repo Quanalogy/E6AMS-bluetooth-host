@@ -1,15 +1,40 @@
 import struct
+import pygatt
+import logging
 
-from Frames.FrameTemplate import FrameTemplate
 from Layers.LayerTemplate import LayerTemplate
-from Frames.DllFrame import DllFrame
+from Frames.FrameTemplate import FrameTemplate
+
+logging.basicConfig()
+logging.getLogger('pygatt').setLevel(logging.DEBUG)
 
 class DllLayer(LayerTemplate):
 
-    SOF = 0xAA
-    started = False
-    remaining = 0
-    totalPacket = bytearray()
+    def __init__(self, frame_parser: FrameTemplate):
+        super().__init__(frame_parser)
+        self.hm10_uuid = "0000FFE1-0000-1000-8000-00805F9B34FB"
+        self.hm10_address = "D4:36:39:BB:E8:D6"
+        # The BGAPI backend will attemt to auto-discover the serial device name of the
+        # attached BGAPI-compatible USB adapter.
+        self.adapter = pygatt.GATTToolBackend()
+        self.SOF = 0xAA
+        self.started = False
+        self.remaining = 0
+        self.totalPacket = bytearray()
+        self.adapter.start()
+        self.device = self.adapter.connect(address=self.hm10_address)
+        self.device.subscribe(self.hm10_uuid, callback=self.handle_data)
+
+    def handle_data(self, handle: int, value: bytearray):
+        """
+            handle -- integer, characteristic read handle the data was received on
+            value -- bytearray, the data returned in the notification
+        """
+        response = self.receive(value)
+
+        if response is not None:
+            print("This is the response: {}".format(response.hex()))
+            # device.w
 
     def receive(self, packet):
         """ Method for handle receive of new packet.
@@ -64,7 +89,7 @@ class DllLayer(LayerTemplate):
         if None != dll_frame:
             app_frame = dll_frame.getPayload()
             if app_frame is not None:
-                return self.lower_layer.receive(app_frame)
+                return self.upper_layer.receive(app_frame)
             else:
                 print("App frame is none!")
         else:
@@ -72,8 +97,6 @@ class DllLayer(LayerTemplate):
             print(self.totalPacket.hex())
             return None
 
-
-# payload = bytes.fromhex("0001bbcc")
-# md5_sum = hashlib.md5(payload).digest()
-# dll = DllLayer(payload + md5_sum)
-# print(dll.valid)
+    def send(self, packet):
+        dll_obj = self.frame_parser.from_appframe(packet)
+        self.device.char_write(self.hm10_uuid, dll_obj.frame)
