@@ -22,6 +22,10 @@ class AppLayer(LayerTemplate):
         self.lastElement = None
         # self.fwState = fwStates.awiting
 
+    def bind(self, lower_layer: LayerTemplate, upper_layer: LayerTemplate):
+        self.lower_layer = lower_layer
+        self.lower_layer = upper_layer
+
     def receive(self, packet):
 
         app_frame = self.frame_parser.from_bytes(packet)

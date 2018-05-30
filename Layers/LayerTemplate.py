@@ -1,6 +1,6 @@
 from Frames import FrameTemplate
 
-class BaseLayerTemplate:
+class LayerTemplate:
 
     def __init__(self, frame_parser: FrameTemplate):
         self.frame_parser = frame_parser
@@ -8,9 +8,3 @@ class BaseLayerTemplate:
 
     def send(self, packet):
         raise NotImplementedError
-
-class LayerTemplate(BaseLayerTemplate):
-
-    def bind(self, lower_layer: BaseLayerTemplate, upper_layer: BaseLayerTemplate):
-        self.lower_layer = lower_layer
-        self.lower_layer = upper_layer
