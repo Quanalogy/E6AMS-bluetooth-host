@@ -78,7 +78,7 @@ class DllLayer(LayerTemplate):
         if None != dll_frame:
             app_frame = dll_frame.getPayload()
             if app_frame is not None:
-                return self.lower_layer.receive(app_frame)
+                return self.upper_layer.receive(app_frame)
             else:
                 print("App frame is none!")
         else:
