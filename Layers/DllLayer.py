@@ -25,9 +25,7 @@ class DllLayer(LayerTemplate):
         self.device = self.adapter.connect(address=self.hm10_address)
         self.device.subscribe(self.hm10_uuid, callback=self.receive)
 
-    def bind(self, lower_layer: LayerTemplate, upper_layer: LayerTemplate):
-        self.lower_layer = lower_layer
-        self.lower_layer = upper_layer
+
 
     def receive(self, handle: int, packet: bytearray):
         """ Method for handle receive of new packet.
