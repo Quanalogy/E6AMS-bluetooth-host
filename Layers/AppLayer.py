@@ -56,7 +56,7 @@ class AppLayer(LayerTemplate):
         self.path_to_firmware = path_to_firmware
         app_frame_obj = self.frame_parser(Commands.firmware_reset.value, 0, 0)
         # self.fwState = fwStates.reset_to_firmware
-        self.lower_layer.send(app_frame_obj.frame)
+        self.lower_layer.send(app_frame_obj.frame())
 
     def sendMaxProfiles(self):
         app_frame_obj = self.frame_parser(Commands.max_profiles, 1, len(profile_mapping))
