@@ -7,3 +7,4 @@ class Commands(IntEnum):
     firmware_ready_to_accept = 3
     firmware_segment_count = 4
     firmware_segment = 5
+    max_profiles = 6

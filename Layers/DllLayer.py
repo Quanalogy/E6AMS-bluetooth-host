@@ -1,3 +1,4 @@
+# Implementation inspired from https://github.com/peplin/pygatt
 import struct
 import pygatt
 import logging

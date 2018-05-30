@@ -11,13 +11,12 @@ from Frames.AppFrame import AppFrame
 dll_layer = DllLayer(DllFrame)
 app_layer = AppLayer(AppFrame)
 
+dll_layer.bind(None, app_layer)
+app_layer.bind(dll_layer, None)
+
 try:
-
-    dll_layer.bind(None, app_layer)
-    app_layer.bind(dll_layer, None)
-
     while True:
-        path = input("Write path to file to firmware upload")
+        path = input("Write path to file to firmware upload\n")
 
         if os.path.exists(path):
             app_layer.sendFWReset(path)
