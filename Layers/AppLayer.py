@@ -9,10 +9,10 @@ from Frames.FrameTemplate import FrameTemplate
 from Misc.Commands import Commands
 from Misc.Buttons import profile_mapping
 
-class fwStates(enum):
-    awiting = 0
-    reset_to_firmware = 1
-    more_to_send = 2
+# class fwStates(enum):
+#     awiting = 0
+#     reset_to_firmware = 1
+#     more_to_send = 2
 
 class AppLayer(LayerTemplate):
 
@@ -55,7 +55,7 @@ class AppLayer(LayerTemplate):
     def sendFWReset(self, path_to_firmware):
         self.path_to_firmware = path_to_firmware
         app_frame_obj = self.frame_parser(Commands.firmware_reset.value, 0, 0)
-        self.fwState = fwStates.reset_to_firmware
+        # self.fwState = fwStates.reset_to_firmware
         self.upper_layer.send(app_frame_obj.frame)
 
     def sendMaxProfiles(self):
