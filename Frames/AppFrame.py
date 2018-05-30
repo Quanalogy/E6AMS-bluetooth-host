@@ -22,6 +22,8 @@ class AppFrame(FrameTemplate):
 
         if self.payload is None:
             return header
+        elif type(self.payload) == int:
+            self.payload = struct.pack(">B", self.payload)
 
         return header + self.payload
 
