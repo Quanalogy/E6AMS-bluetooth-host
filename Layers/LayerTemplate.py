@@ -13,4 +13,4 @@ class LayerTemplate(BaseLayerTemplate):
 
     def bind(self, lower_layer: BaseLayerTemplate, upper_layer: BaseLayerTemplate):
         self.lower_layer = lower_layer
-        self.upper_layer = upper_layer
+        self.lower_layer = upper_layer

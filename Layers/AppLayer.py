@@ -34,7 +34,7 @@ class AppLayer(LayerTemplate):
 
         if command == Commands.ack_nack:
             if app_frame.getPayload() == 0: # Nack
-                self.upper_layer.send(self.lastElement)
+                self.lower_layer.send(self.lastElement)
         elif command == Commands.control:
             xdo_cmd = "DISPLAY=:0 xdotool search impress click {}"
             payload = app_frame.getPayload()
@@ -50,13 +50,13 @@ class AppLayer(LayerTemplate):
 
         if not self.sendingQueue.empty():
             self.lastElement = self.sendingQueue.get()
-            self.upper_layer.send(self.lastElement)
+            self.lower_layer.send(self.lastElement)
 
     def sendFWReset(self, path_to_firmware):
         self.path_to_firmware = path_to_firmware
         app_frame_obj = self.frame_parser(Commands.firmware_reset.value, 0, 0)
         # self.fwState = fwStates.reset_to_firmware
-        self.upper_layer.send(app_frame_obj.frame)
+        self.lower_layer.send(app_frame_obj.frame)
 
     def sendMaxProfiles(self):
         app_frame_obj = self.frame_parser(Commands.max_profiles, 1, len(profile_mapping))
