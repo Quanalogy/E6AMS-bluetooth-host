@@ -63,6 +63,7 @@ class AppLayer(LayerTemplate):
     def sendFWReset(self, path_to_firmware):
         self.path_to_firmware = path_to_firmware
         app_frame_obj = self.frame_parser(Commands.firmware_reset.value, 0, 0)
+        print("Sending the following frame:", app_frame_obj.frame().hex())
         # self.fwState = fwStates.reset_to_firmware
         self.lower_layer.send(app_frame_obj.frame())
 

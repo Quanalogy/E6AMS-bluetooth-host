@@ -26,8 +26,6 @@ class DllLayer(LayerTemplate):
         self.device = self.adapter.connect(address=self.hm10_address)
         self.device.subscribe(self.hm10_uuid, callback=self.receive)
 
-
-
     def receive(self, handle: int, packet: bytearray):
         """ Method for handle receive of new packet.
 
@@ -101,12 +99,15 @@ class DllLayer(LayerTemplate):
             return None
 
     def send(self, packet):
+        print("Got the following App frame to send:", packet.hex())
         dll_obj = self.frame_parser.from_appframe(packet)
+        print("Got the following DLL frame to send:", dll_obj.frame().hex())
 
         offset = 20
         frame = dll_obj.frame()
         packet_len = len(packet)
         for i in range(0, packet_len -1, offset):
+            print("Looping")
             if i + offset > packet_len:
                 print("send {} bytes".format(packet_len-i))
                 self.device.char_write(self.hm10_uuid, frame[i:])
