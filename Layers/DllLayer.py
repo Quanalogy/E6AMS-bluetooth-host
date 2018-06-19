@@ -17,12 +17,15 @@ class DllLayer(LayerTemplate):
         # The BGAPI backend will attemt to auto-discover the serial device name of the
         # attached BGAPI-compatible USB adapter.
         self.SOF = 0xAA
+        self.offloadedPacket = bytearray()
         self.reset_packet_values()
-
         self.hm10_uuid = "0000FFE1-0000-1000-8000-00805F9B34FB"
         self.hm10_address = "D4:36:39:BB:E8:D6"
         self.adapter = pygatt.GATTToolBackend()
         self.adapter.start()
+        self.setup_device()
+
+    def setup_device(self):
         self.device = self.adapter.connect(address=self.hm10_address)
         self.device.subscribe(self.hm10_uuid, callback=self.receive)
 
@@ -45,9 +48,9 @@ class DllLayer(LayerTemplate):
             elif self.remaining < packet_len:
                 print("Got more remaining than expected, trying to handle anyways")
                 packet_len = self.remaining
+                self.offloadedPacket = packet[packet_len:]
             # Done receiving, unpack the packet
-            self.totalPacket += packet[:packet_len]
-            response = self.handle_packet()
+            response = self.handle_packet(self.totalPacket + packet[:packet_len])
 
             if response != None:
                 print("You need to implement response mate")
@@ -61,8 +64,7 @@ class DllLayer(LayerTemplate):
 
                 if self.remaining == 0:
                     self.started = False
-                    self.totalPacket = packet
-                    response = self.handle_packet()
+                    response = self.handle_packet(packet)
 
                     if response != None:
                         print("You need to implement response mate")
@@ -80,12 +82,33 @@ class DllLayer(LayerTemplate):
             return None
 
     def reset_packet_values(self):
-        self.started = False
-        self.remaining = 0
-        self.totalPacket = bytearray()
 
-    def handle_packet(self):
-        dll_frame = self.frame_parser.from_bytes(self.totalPacket)
+        if len(self.offloadedPacket) > 0:
+            # We've got some extra data to be handled
+            self.started = True
+            if self.offloadedPacket[0] == self.SOF:
+                # The next packet is there
+                self.totalPacket = self.offloadedPacket
+            elif self.SOF in self.offloadedPacket:
+                self.totalPacket = self.offloadedPacket[self.offloadedPacket.index(self.SOF):]
+            else:
+                self.totalPacket = bytearray()
+
+            if len(self.totalPacket) > 3:
+                self.remaining = struct.unpack(">H", self.totalPacket[1:3])[0]
+            else:
+                self.remaining = 0
+                self.started = False
+
+            self.offloadedPacket = bytearray()
+        else:
+            self.started = False
+            self.remaining = 0
+            self.totalPacket = bytearray()
+            self.offloadedPacket = bytearray()
+
+    def handle_packet(self, packet):
+        dll_frame = self.frame_parser.from_bytes(packet)
 
         if None != dll_frame:
             app_frame = dll_frame.getPayload()
@@ -95,11 +118,14 @@ class DllLayer(LayerTemplate):
                 print("App frame is none!")
         else:
             print("DLL frame None")
-            print(self.totalPacket.hex())
+            print(packet.hex())
             return None
 
     def send(self, packet):
-        print("Got the following App frame to send:", packet.hex())
+
+        if not self.device.bond():
+            self.setup_device()
+
         dll_obj = self.frame_parser.from_appframe(packet)
         print("Got the following DLL frame to send:", dll_obj.frame().hex())
 
@@ -107,7 +133,6 @@ class DllLayer(LayerTemplate):
         frame = dll_obj.frame()
         packet_len = len(frame)
         for i in range(0, packet_len -1, offset):
-            print("Looping")
             if i + offset > packet_len:
                 print("send {} bytes".format(packet_len-i))
                 self.device.char_write(self.hm10_uuid, frame[i:])
