@@ -2,6 +2,7 @@ import os
 import enum
 import queue
 import struct
+import time
 
 from Layers.LayerTemplate import LayerTemplate
 from Frames.FrameTemplate import FrameTemplate
@@ -36,6 +37,7 @@ class AppLayer(LayerTemplate):
             print("AckNack, ", app_frame.getPayload())
             if app_frame.getPayload() == 0: # Nack
                 self.lower_layer.send(self.lastElement)
+                return
         elif command == Commands.control:
             xdo_cmd = "DISPLAY=:0 xdotool search impress click {}"
             payload = app_frame.getPayload()
@@ -52,6 +54,7 @@ class AppLayer(LayerTemplate):
         if not self.sendingQueue.empty():
             self.lastElement = self.sendingQueue.get()
             print("sending: ", self.lastElement.hex())
+            time.sleep(10)
             self.lower_layer.send(self.lastElement)
 
     def sendFWReset(self, path_to_firmware):
@@ -67,6 +70,7 @@ class AppLayer(LayerTemplate):
         with open(self.path_to_firmware, 'rb') as file:
             for binLine in file:
                 bin_len = len(binLine)
+                print("bin_len: ", bin_len)
                 total_amount_of_segments = 0
 
                 for i in range(0, bin_len, 64):
