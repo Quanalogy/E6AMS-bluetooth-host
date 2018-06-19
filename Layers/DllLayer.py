@@ -195,9 +195,6 @@ class DllLayer(LayerTemplate):
 
     def send(self, packet):
 
-        if not self.device.bond():
-            self.setup_device()
-
         dll_obj = self.frame_parser.from_appframe(packet)
         print("Got the following DLL frame to send:", dll_obj.frame().hex())
 
