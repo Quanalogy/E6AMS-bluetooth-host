@@ -20,10 +20,10 @@ class DllLayer(LayerTemplate):
 
         self.hm10_uuid = "0000FFE1-0000-1000-8000-00805F9B34FB"
         self.hm10_address = "D4:36:39:BB:E8:D6"
-        self.adapter = pygatt.GATTToolBackend()
-        self.adapter.start()
-        self.device = self.adapter.connect(address=self.hm10_address)
-        self.device.subscribe(self.hm10_uuid, callback=self.receive)
+        # self.adapter = pygatt.GATTToolBackend()
+        # self.adapter.start()
+        # self.device = self.adapter.connect(address=self.hm10_address)
+        # self.device.subscribe(self.hm10_uuid, callback=self.receive)
 
 
 
@@ -58,9 +58,22 @@ class DllLayer(LayerTemplate):
 
         else:
             if packet[0] == self.SOF:
-                self.started = True
                 self.remaining = struct.unpack(">H", packet[1:3])[0] - packet_len + 3
-                self.totalPacket += packet
+
+                if self.remaining == 0:
+                    self.started = False
+                    self.totalPacket = packet
+                    response = self.handle_packet()
+
+                    if response != None:
+                        print("You need to implement response mate")
+                        return
+
+                    self.reset_packet_values()
+                else:
+                    self.started = True
+                    self.totalPacket += packet
+
                 print("Start of frame received, {} bytes remaining".format(self.remaining))
             else:
                 print("Throwing away packet as the first byte is not {}, packet: {}".format(self.SOF, packet.hex()))

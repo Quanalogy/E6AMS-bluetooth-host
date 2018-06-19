@@ -35,10 +35,12 @@ class AppLayer(LayerTemplate):
 
         if command == Commands.ack_nack:
             #print("AckNack, ", app_frame.getPayload())
-            if app_frame.getPayload() == 0: # Nack
+            if struct.unpack(">B", app_frame.getPayload()) == 0: # Nack
                 print("Resending package: ", self.lastElement.hex())
                 self.lower_layer.send(self.lastElement)
                 return
+            else:
+                print("Ack")
         elif command == Commands.control:
             xdo_cmd = "DISPLAY=:0 xdotool search impress click {}"
             payload = app_frame.getPayload()
