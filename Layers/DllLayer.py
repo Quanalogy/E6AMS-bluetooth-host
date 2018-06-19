@@ -105,7 +105,7 @@ class DllLayer(LayerTemplate):
 
         offset = 20
         frame = dll_obj.frame()
-        packet_len = len(packet)
+        packet_len = len(frame)
         for i in range(0, packet_len -1, offset):
             print("Looping")
             if i + offset > packet_len:
