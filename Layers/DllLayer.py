@@ -101,4 +101,8 @@ class DllLayer(LayerTemplate):
 
     def send(self, packet):
         dll_obj = self.frame_parser.from_appframe(packet)
-        self.device.char_write(self.hm10_uuid, dll_obj.frame())
+
+        offset = 20
+        frame = dll_obj.frame()
+        for i in range(0, len(packet) -1, offset):
+            self.device.char_write(self.hm10_uuid, frame[i:i+offset])
