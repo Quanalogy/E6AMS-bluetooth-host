@@ -21,7 +21,7 @@ class AppLayer(LayerTemplate):
         super().__init__(frame_parser)
         self.sendingQueue = queue.Queue()
         self.lastElement = None
-        # self.path_to_firmware = "/home/munk/CLionProjects/E6AMS-Project/cmake-build-release/E6AMS"
+        # self.path_to_firmware = "/home/munk/CLionProjects/E6AMS-Project/cmake-build-release/E6AMS.bin"
         # self.fwState = fwStates.awiting
 
     def receive(self, packet):
@@ -72,19 +72,32 @@ class AppLayer(LayerTemplate):
         app_frame_obj = self.frame_parser(Commands.max_profiles, 1, len(profile_mapping))
 
     def setupAppFrames(self):
+        to_send = []
         with open(self.path_to_firmware, 'rb') as file:
+
+            for_later = bytearray()
             for binLine in file:
+
+                if len(for_later) > 0:
+                    binLine = for_later + binLine
+                    for_later = bytearray()
+
                 bin_len = len(binLine)
                 print("bin_len: ", bin_len)
-                total_amount_of_segments = 0
-
-                for i in range(0, bin_len, 64):
-                    total_amount_of_segments += 1
-
-                self.sendingQueue.put(self.frame_parser(Commands.firmware_segment_count, 2, struct.pack(">H", total_amount_of_segments)).frame())
 
                 for i in range(0, bin_len, 64):
                     if bin_len - (i + 64) >= 0:
-                        self.sendingQueue.put(self.frame_parser(Commands.firmware_segment, 64, binLine[i:i + 64]).frame())
+                        to_send.append(self.frame_parser(Commands.firmware_segment, 64, binLine[i:i + 64]).frame())
                     else:
-                        self.sendingQueue.put(self.frame_parser(Commands.firmware_segment, len(binLine[i:]), binLine[i:]).frame())
+                        for_later += binLine[i:]
+
+            if len(for_later) > 0:
+                to_send.append(self.frame_parser(Commands.firmware_segment, len(for_later), for_later).frame())
+
+        total_amount_of_segments = len(to_send)
+
+        self.sendingQueue.put(
+            self.frame_parser(Commands.firmware_segment_count, 2, struct.pack(">H", total_amount_of_segments)).frame())
+
+        for segment in to_send:
+            self.sendingQueue.put(segment)

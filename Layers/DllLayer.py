@@ -17,18 +17,23 @@ class DllLayer(LayerTemplate):
         # The BGAPI backend will attemt to auto-discover the serial device name of the
         # attached BGAPI-compatible USB adapter.
         self.SOF = 0xAA
+        self.dll_min_size = 1 + 2 + 1 + 1 + 2 + 16
         self.offloadedPacket = bytearray()
         self.reset_packet_values()
         self.hm10_uuid = "0000FFE1-0000-1000-8000-00805F9B34FB"
         self.hm10_address = "D4:36:39:BB:E8:D6"
-        self.adapter = pygatt.GATTToolBackend()
-        self.adapter.start()
-        self.setup_device()
+        self.simulate = False
+
+        if not self.simulate:
+            self.adapter = pygatt.GATTToolBackend()
+            self.adapter.start()
+            self.setup_device()
 
     def setup_device(self):
-        self.device = self.adapter.connect(address=self.hm10_address)
-        self.device.subscribe(self.hm10_uuid, callback=self.receive)
-        pass
+        if not self.simulate:
+            self.device = self.adapter.connect(address=self.hm10_address)
+            self.device.subscribe(self.hm10_uuid, callback=self.receive)
+
 
     def receive(self, handle: int, packet: bytearray):
         """ Method for handle receive of new packet.
@@ -36,51 +41,99 @@ class DllLayer(LayerTemplate):
         :param packet:  The packet received in form of: |Preamble|Length
         :return:        Nothing
         """
+        self.totalPacket += packet
 
-        packet_len = len(packet)
+        if not self.SOF in self.totalPacket:
+            print("SOF not in totalPacket, which is: ", self.totalPacket.hex())
+            return
 
-        if self.started:
+        start_of_packet = self.totalPacket.index(self.SOF)
 
-            if self.remaining > packet_len:
-                self.totalPacket += packet
-                self.remaining -= packet_len
-                print("Frame received, {} bytes remaining".format(self.remaining))
-                return None
-            elif self.remaining < packet_len:
-                print("Got more remaining than expected, trying to handle anyways")
-                packet_len = self.remaining
-                self.offloadedPacket = packet[packet_len:]
-            # Done receiving, unpack the packet
-            response = self.handle_packet(self.totalPacket + packet[:packet_len])
+        if start_of_packet != 0:
+            print("Removing the following bytes:", self.totalPacket[:start_of_packet])
+            self.totalPacket = self.totalPacket[start_of_packet:]
 
-            if response != None:
-                print("You need to implement response mate")
+        if len(self.totalPacket) < self.dll_min_size:
+            print("Packet not complete, it is: ", self.totalPacket.hex())
+            return
+
+        self.remaining = struct.unpack(">H", self.totalPacket[1:3])[0]
+
+        if self.remaining > len(self.totalPacket[3:]):
+            print("Packet not complete, it is: ", self.totalPacket.hex())
+
+        while True:
+            offset = self.remaining+3
+            self.handle_packet(self.totalPacket[:offset])
+            self.totalPacket = self.totalPacket[offset:]
+
+            if not self.SOF in self.totalPacket:
                 return
 
-            self.reset_packet_values()
+            if len(self.totalPacket) < self.dll_min_size:
+                return
 
-        else:
-            if packet[0] == self.SOF:
-                self.remaining = struct.unpack(">H", packet[1:3])[0] - packet_len + 3
+            start_of_frame_index = self.totalPacket.index(self.SOF)
+            self.totalPacket = self.totalPacket[start_of_frame_index:]
 
-                if self.remaining == 0:
-                    self.started = False
-                    response = self.handle_packet(packet)
+            if len(self.totalPacket) < self.dll_min_size:
+                return
 
-                    if response != None:
-                        print("You need to implement response mate")
-                        return
+            self.remaining = struct.unpack(">H", self.totalPacket[1:3])[0]
 
-                    self.reset_packet_values()
-                else:
-                    self.started = True
-                    self.totalPacket += packet
 
-                print("Start of frame received, {} bytes remaining".format(self.remaining))
-            else:
-                print("Throwing away packet as the first byte is not {}, packet: {}".format(self.SOF, packet.hex()))
 
-            return None
+    # def receive(self, handle: int, packet: bytearray):
+    #     """ Method for handle receive of new packet.
+    #
+    #     :param packet:  The packet received in form of: |Preamble|Length
+    #     :return:        Nothing
+    #     """
+    #
+    #     packet_len = len(packet)
+    #
+    #     if self.started:
+    #
+    #         if self.remaining > packet_len:
+    #             self.totalPacket += packet
+    #             self.remaining -= packet_len
+    #             print("Frame received, {} bytes remaining".format(self.remaining))
+    #             return None
+    #         elif self.remaining < packet_len:
+    #             print("Got more remaining than expected, trying to handle anyways")
+    #             packet_len = self.remaining
+    #             self.offloadedPacket = packet[packet_len:]
+    #         # Done receiving, unpack the packet
+    #         response = self.handle_packet(self.totalPacket + packet[:packet_len])
+    #
+    #         if response != None:
+    #             print("You need to implement response mate")
+    #             return
+    #
+    #         self.reset_packet_values()
+    #
+    #     else:
+    #         if packet[0] == self.SOF:
+    #             self.remaining = struct.unpack(">H", packet[1:3])[0] - packet_len + 3
+    #
+    #             if self.remaining == 0:
+    #                 self.started = False
+    #                 response = self.handle_packet(packet)
+    #
+    #                 if response != None:
+    #                     print("You need to implement response mate")
+    #                     return
+    #
+    #                 self.reset_packet_values()
+    #             else:
+    #                 self.started = True
+    #                 self.totalPacket += packet
+    #
+    #             print("Start of frame received, {} bytes remaining".format(self.remaining))
+    #         else:
+    #             print("Throwing away packet as the first byte is not {}, packet: {}".format(self.SOF, packet.hex()))
+    #
+    #         return None
 
     def reset_packet_values(self):
 
