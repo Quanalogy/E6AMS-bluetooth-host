@@ -33,6 +33,7 @@ class AppLayer(LayerTemplate):
         command = app_frame.command
 
         if command == Commands.ack_nack:
+            print("AckNack, ", app_frame.getPayload())
             if app_frame.getPayload() == 0: # Nack
                 self.lower_layer.send(self.lastElement)
         elif command == Commands.control:
@@ -50,6 +51,7 @@ class AppLayer(LayerTemplate):
 
         if not self.sendingQueue.empty():
             self.lastElement = self.sendingQueue.get()
+            print("sending: ", self.lastElement.hex())
             self.lower_layer.send(self.lastElement)
 
     def sendFWReset(self, path_to_firmware):
