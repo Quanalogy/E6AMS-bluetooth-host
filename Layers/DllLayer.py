@@ -21,13 +21,13 @@ class DllLayer(LayerTemplate):
         self.reset_packet_values()
         self.hm10_uuid = "0000FFE1-0000-1000-8000-00805F9B34FB"
         self.hm10_address = "D4:36:39:BB:E8:D6"
-        # self.adapter = pygatt.GATTToolBackend()
-        # self.adapter.start()
+        self.adapter = pygatt.GATTToolBackend()
+        self.adapter.start()
         self.setup_device()
 
     def setup_device(self):
-        # self.device = self.adapter.connect(address=self.hm10_address)
-        # self.device.subscribe(self.hm10_uuid, callback=self.receive)
+        self.device = self.adapter.connect(address=self.hm10_address)
+        self.device.subscribe(self.hm10_uuid, callback=self.receive)
         pass
 
     def receive(self, handle: int, packet: bytearray):
