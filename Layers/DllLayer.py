@@ -1,4 +1,5 @@
 # Implementation inspired from https://github.com/peplin/pygatt
+import time
 import struct
 import pygatt
 import logging
@@ -104,5 +105,12 @@ class DllLayer(LayerTemplate):
 
         offset = 20
         frame = dll_obj.frame()
-        for i in range(0, len(packet) -1, offset):
-            self.device.char_write(self.hm10_uuid, frame[i:i+offset])
+        packet_len = len(packet)
+        for i in range(0, packet_len -1, offset):
+            if i + offset > packet_len:
+                print("send {} bytes".format(packet_len-i))
+                self.device.char_write(self.hm10_uuid, frame[i:])
+            else:
+                print("Send 20 bytes")
+                self.device.char_write(self.hm10_uuid, frame[i:i+offset])
+            time.sleep(0.1)
