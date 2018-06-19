@@ -34,8 +34,9 @@ class AppLayer(LayerTemplate):
         command = app_frame.command
 
         if command == Commands.ack_nack:
-            print("AckNack, ", app_frame.getPayload())
+            #print("AckNack, ", app_frame.getPayload())
             if app_frame.getPayload() == 0: # Nack
+                print("Resending package: ", self.lastElement.hex())
                 self.lower_layer.send(self.lastElement)
                 return
         elif command == Commands.control:
