@@ -158,4 +158,4 @@ class DllLayer(LayerTemplate):
             else:
                 print("Send 20 bytes")
                 self.device.char_write(self.hm10_uuid, frame[i:i+offset])
-            time.sleep(0.1)
+            time.sleep(0.01)
