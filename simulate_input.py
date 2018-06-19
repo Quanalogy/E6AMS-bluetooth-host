@@ -40,4 +40,7 @@ app_layer.bind(dll_layer, None)
 #
 #     dll_layer.receive(None, to_send)
 
-dll_layer.receive(None, bytes.fromhex("aa001501000001000c514cbf0592b692b2d0aa71d75e0a4a"))
+packets = ["aa00150100000101c00abf6723ba72ecfd61f734", "0de6cadaaa001401030000b99ee9adf6a2e46857b10028352fe174"]
+
+for pack in packets:
+    dll_layer.receive(None, bytes.fromhex(pack))

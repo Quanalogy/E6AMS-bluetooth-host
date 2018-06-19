@@ -21,6 +21,7 @@ class AppLayer(LayerTemplate):
         super().__init__(frame_parser)
         self.sendingQueue = queue.Queue()
         self.lastElement = None
+        # self.path_to_firmware = "/home/munk/CLionProjects/E6AMS-Project/cmake-build-release/E6AMS"
         # self.fwState = fwStates.awiting
 
     def receive(self, packet):
@@ -80,7 +81,7 @@ class AppLayer(LayerTemplate):
                 for i in range(0, bin_len, 64):
                     total_amount_of_segments += 1
 
-                self.sendingQueue.put(self.frame_parser(Commands.firmware_segment_count, 2, struct.pack(">H", total_amount_of_segments)))
+                self.sendingQueue.put(self.frame_parser(Commands.firmware_segment_count, 2, struct.pack(">H", total_amount_of_segments)).frame())
 
                 for i in range(0, bin_len, 64):
                     if bin_len - (i + 64) >= 0:
