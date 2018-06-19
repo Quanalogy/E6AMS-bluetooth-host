@@ -36,6 +36,7 @@ class AppLayer(LayerTemplate):
             print("AckNack, ", app_frame.getPayload())
             if app_frame.getPayload() == 0: # Nack
                 self.lower_layer.send(self.lastElement)
+                return
         elif command == Commands.control:
             xdo_cmd = "DISPLAY=:0 xdotool search impress click {}"
             payload = app_frame.getPayload()

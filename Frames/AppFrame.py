@@ -20,7 +20,7 @@ class AppFrame(FrameTemplate):
     def frame(self):
         header = struct.pack(">BH", self.command, self.length)
 
-        if self.payload is None:
+        if self.length == 0:
             return header
         elif type(self.payload) == int:
             self.payload = struct.pack(">B", self.payload)
