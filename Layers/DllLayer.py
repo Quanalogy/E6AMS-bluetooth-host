@@ -20,10 +20,10 @@ class DllLayer(LayerTemplate):
 
         self.hm10_uuid = "0000FFE1-0000-1000-8000-00805F9B34FB"
         self.hm10_address = "D4:36:39:BB:E8:D6"
-        # self.adapter = pygatt.GATTToolBackend()
-        # self.adapter.start()
-        # self.device = self.adapter.connect(address=self.hm10_address)
-        # self.device.subscribe(self.hm10_uuid, callback=self.receive)
+        self.adapter = pygatt.GATTToolBackend()
+        self.adapter.start()
+        self.device = self.adapter.connect(address=self.hm10_address)
+        self.device.subscribe(self.hm10_uuid, callback=self.receive)
 
 
 
